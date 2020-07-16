@@ -1,4 +1,4 @@
-package cn.gly.springframework.ioc.enums;
+package cn.gly.springframework.util.enums;
 
 /**
  * 〈一句话功能简述〉<br>

@@ -8,12 +8,12 @@ package cn.gly.springframework.ioc;
  * @create 2020/7/14
  * @since 1.0.0
  */
-public class RuntimeBeanReference {
+public class GlyRuntimeBeanReference {
 
     // ref 属性值
     private String ref;
 
-    public RuntimeBeanReference(String ref) {
+    public GlyRuntimeBeanReference(String ref) {
         this.ref = ref;
     }
 

@@ -1,7 +1,7 @@
 package cn.gly.springframework.ioc;
 
 
-import cn.gly.springframework.ioc.enums.GlyBeanScope;
+import cn.gly.springframework.util.enums.GlyBeanScope;
 
 import java.util.ArrayList;
 import java.util.List;

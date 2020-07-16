@@ -1,14 +1,12 @@
 package cn.gly.service;
 
 import cn.gly.entity.User;
-import cn.gly.mapper.UserMapper;
-import cn.gly.mapper.UserMapperImpl;
 import cn.gly.mybatis.io.Resources;
 import cn.gly.springframework.ioc.GlyBeanDefinition;
 import cn.gly.springframework.ioc.GlyPropertyValue;
-import cn.gly.springframework.ioc.RuntimeBeanReference;
-import cn.gly.springframework.ioc.TypedStringValue;
-import cn.gly.springframework.ioc.enums.GlyBeanScope;
+import cn.gly.springframework.ioc.GlyRuntimeBeanReference;
+import cn.gly.springframework.ioc.GlyTypedStringValue;
+import cn.gly.springframework.util.enums.GlyBeanScope;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -25,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 〈一句话功能简述〉<br>
@@ -38,10 +37,10 @@ import java.util.Objects;
 public class UserServiceTest {
 
     //存储单例bean 集合
-    private Map<String, Object> singletonMap = new HashMap<>();
+    private Map<String, Object> singletonMap = new ConcurrentHashMap<>();
 
     //存储 在xml 或注解 解析出的beanDefinition 集合
-    private Map<String, GlyBeanDefinition> beanDefinitionMap = new HashMap<>();
+    private Map<String, GlyBeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
 
     @Before
     public void initBeanConfig() {
@@ -54,6 +53,18 @@ public class UserServiceTest {
         }
         registerBeanDefinitions(document.getRootElement());
     }
+
+
+    @Test
+    public void test() {
+        UserService userService = (UserService) getBean("userService");
+        Map<String, Object> param = new HashMap<>();
+        param.put("username", "张三");
+        param.put("sex", "男");
+        List<User> users = userService.queryUserByParams(param);
+        System.out.println(users);
+    }
+
 
     private void registerBeanDefinitions(Element rootElement) {
         List<Element> elements = rootElement.elements();
@@ -131,11 +142,11 @@ public class UserServiceTest {
         /**
          * PropertyValue就封装着一个property标签的信息
          */
-        GlyPropertyValue pv = null;
+        GlyPropertyValue pv;
 
         if (value != null && !value.equals("")) {
             // 因为spring配置文件中的value是String类型，而对象中的属性值是各种各样的，所以需要存储类型
-            TypedStringValue typeStringValue = new TypedStringValue(value);
+            GlyTypedStringValue typeStringValue = new GlyTypedStringValue(value);
 
             Class<?> targetType = getTypeByFieldName(beanDefinition.getClazzName(), name);
             typeStringValue.setTargetType(targetType);
@@ -144,7 +155,7 @@ public class UserServiceTest {
             beanDefinition.addPropertyValue(pv);
         } else if (ref != null && !ref.equals("")) {
 
-            RuntimeBeanReference reference = new RuntimeBeanReference(ref);
+            GlyRuntimeBeanReference reference = new GlyRuntimeBeanReference(ref);
             pv = new GlyPropertyValue(name, reference);
             beanDefinition.addPropertyValue(pv);
         } else {
@@ -165,17 +176,6 @@ public class UserServiceTest {
 
     private void parseCustomElement(Element element) {
         // AOP、TX、MVC标签的解析，都是走该流程
-    }
-
-
-    @Test
-    public void test() {
-        UserService userService = (UserService) getBean("userService");
-        Map<String, Object> param = new HashMap<>();
-        param.put("username", "张三");
-        param.put("sex", "男");
-        List<User> users = userService.queryUserByParams(param);
-        System.out.println(users);
     }
 
     private Object getBean(String beanName) {
@@ -294,8 +294,8 @@ public class UserServiceTest {
     }
 
     private Object resoleValue(Object value) {
-        if (value instanceof TypedStringValue) {
-            TypedStringValue typedStringValue = (TypedStringValue) value;
+        if (value instanceof GlyTypedStringValue) {
+            GlyTypedStringValue typedStringValue = (GlyTypedStringValue) value;
             String stringValue = typedStringValue.getValue();
             Class<?> targetType = typedStringValue.getTargetType();
             if (targetType == String.class) {
@@ -303,8 +303,8 @@ public class UserServiceTest {
             } else if (targetType == Integer.class) {
                 return Integer.parseInt(stringValue);
             }//....
-        } else if (value instanceof RuntimeBeanReference) {
-            RuntimeBeanReference runtimeBeanReference = (RuntimeBeanReference) value;
+        } else if (value instanceof GlyRuntimeBeanReference) {
+            GlyRuntimeBeanReference runtimeBeanReference = (GlyRuntimeBeanReference) value;
             String ref = runtimeBeanReference.getRef();
             return getBean(ref);
         }
